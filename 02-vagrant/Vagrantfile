@@ -1,0 +1,34 @@
+Vagrant.configure("2") do |config|
+    config.vm.define "static-machine" do |static|
+        static.vm.box = "debian/buster64"
+
+        static.vm.provider "virtualbox" do |vb|
+            vb.name = "gitdemo1.vagrant.vm"
+            vb.memory = "512"
+        end
+
+        static.vm.network "forwarded_port", guest: 80, host: 8080
+
+        static.vm.provision "file", source: "index.html", destination: "/var/www/html/index.html"
+
+    end
+
+    config.vm.define "dynamic-machine" do |dynamic|
+        dynamic.vm.box = "debian/buster64"
+
+        dynamic.vm.provider "virtualbox" do |vb|
+            vb.name = "gitdemo11.vagrant.vm"
+            vb.memory = "512"
+        end
+
+        dynamic.vm.network "forwarded_port", guest: 80, host:8081
+
+        dynamic.vm.provision "shell", inline: <<-SHELL
+            apt-get update
+            apt-get install apache2
+            apt-get install -y php
+        SHELL
+
+        dynamic.vm.provision "file", source: "index.php", destination: "/var/www/html/index.php"
+    end
+end
