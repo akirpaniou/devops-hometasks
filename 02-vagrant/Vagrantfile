@@ -1,34 +1,47 @@
 Vagrant.configure("2") do |config|
-    config.vm.define "static-machine" do |static|
-        static.vm.box = "debian/buster64"
-
-        static.vm.provider "virtualbox" do |vb|
-            vb.name = "gitdemo1.vagrant.vm"
-            vb.memory = "512"
-        end
-
-        static.vm.network "forwarded_port", guest: 80, host: 8080
-
-        static.vm.provision "file", source: "index.html", destination: "/var/www/html/index.html"
-
+  
+    config.vm.define "static_server" do |static_server|
+      static_server.vm.box = "debian/buster64"
+      static_server.vm.network "forwarded_port", guest: 80, host: 8080
+  
+      static_server.vm.synced_folder ".", "/vagrant", disabled: true
+  
+      static_server.vm.provider "virtualbox" do |vb|
+        vb.memory = "512"
+        vb.cpus = 2
+      end
+  
+      static_server.vm.provision "shell", inline: <<-SHELL
+        sudo apt-get update
+        sudo apt-get install -y apache2
+  
+        sudo mkdir -p /var/www/html
+        sudo chown -R vagrant:vagrant /var/www/html
+      SHELL
+  
+      static_server.vm.provision "file", source: "index.html", destination: "/var/www/html/index.html"
     end
-
-    config.vm.define "dynamic-machine" do |dynamic|
-        dynamic.vm.box = "debian/buster64"
-
-        dynamic.vm.provider "virtualbox" do |vb|
-            vb.name = "gitdemo11.vagrant.vm"
-            vb.memory = "512"
-        end
-
-        dynamic.vm.network "forwarded_port", guest: 80, host:8081
-
-        dynamic.vm.provision "shell", inline: <<-SHELL
-            apt-get update
-            apt-get install apache2
-            apt-get install -y php
-        SHELL
-
-        dynamic.vm.provision "file", source: "index.php", destination: "/var/www/html/index.php"
+  
+    
+    config.vm.define "dynamic_server" do |dynamic_server|
+      dynamic_server.vm.box = "debian/buster64"
+      dynamic_server.vm.network "forwarded_port", guest: 80, host: 8081
+      
+      dynamic_server.vm.synced_folder ".", "/vagrant", disabled: true
+  
+      dynamic_server.vm.provider "virtualbox" do |vb|
+        vb.memory = "512"
+        vb.cpus = 2
+      end
+  
+      dynamic_server.vm.provision "shell", inline: <<-SHELL
+        sudo apt-get update
+        sudo apt-get install -y apache2 php
+  
+        sudo mkdir -p /var/www/html
+        sudo chown -R vagrant:vagrant /var/www/html
+      SHELL
+  
+      dynamic_server.vm.provision "file", source: "index.php", destination: "/var/www/html/index.php"
     end
-end
+  end
