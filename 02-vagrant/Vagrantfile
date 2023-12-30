@@ -1,47 +1,58 @@
 Vagrant.configure("2") do |config|
   
-    config.vm.define "static_server" do |static_server|
-      static_server.vm.box = "debian/buster64"
-      static_server.vm.network "forwarded_port", guest: 80, host: 8080
-  
-      static_server.vm.synced_folder ".", "/vagrant", disabled: true
-  
-      static_server.vm.provider "virtualbox" do |vb|
-        vb.memory = "512"
-        vb.cpus = 2
-      end
-  
-      static_server.vm.provision "shell", inline: <<-SHELL
-        sudo apt-get update
-        sudo apt-get install -y apache2
-  
-        sudo mkdir -p /var/www/html
-        sudo chown -R vagrant:vagrant /var/www/html
-      SHELL
-  
-      static_server.vm.provision "file", source: "index.html", destination: "/var/www/html/index.html"
+  config.vm.define "static_server" do |static_server|
+    static_server.vm.box = "debian/buster64"
+    static_server.vm.network "forwarded_port", guest: 80, host: 8080
+
+    static_server.vm.synced_folder ".", "/vagrant", disabled: true
+
+    static_server.vm.provider "virtualbox" do |vb|
+      vb.memory = "512"
+      vb.cpus = 2
     end
-  
-    
-    config.vm.define "dynamic_server" do |dynamic_server|
-      dynamic_server.vm.box = "debian/buster64"
-      dynamic_server.vm.network "forwarded_port", guest: 80, host: 8081
-      
-      dynamic_server.vm.synced_folder ".", "/vagrant", disabled: true
-  
-      dynamic_server.vm.provider "virtualbox" do |vb|
-        vb.memory = "512"
-        vb.cpus = 2
-      end
-  
-      dynamic_server.vm.provision "shell", inline: <<-SHELL
-        sudo apt-get update
-        sudo apt-get install -y apache2 php
-  
-        sudo mkdir -p /var/www/html
-        sudo chown -R vagrant:vagrant /var/www/html
-      SHELL
-  
-      dynamic_server.vm.provision "file", source: "index.php", destination: "/var/www/html/index.php"
-    end
+
+    static_server.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y apache2
+
+      sudo mkdir -p /var/www/html
+      sudo chown -R vagrant:vagrant /var/www/html
+    SHELL
+
+    static_server.vm.provision "file", source: "index.html", destination: "/var/www/html/index.html"
   end
+
+  
+  config.vm.define "dynamic_server" do |dynamic_server|
+    dynamic_server.vm.box = "debian/buster64"
+    dynamic_server.vm.network "forwarded_port", guest: 80, host: 8081
+    
+    dynamic_server.vm.synced_folder ".", "/vagrant", disabled: true
+
+    dynamic_server.vm.provider "virtualbox" do |vb|
+      vb.memory = "512"
+      vb.cpus = 2
+    end
+
+    dynamic_server.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y apache2 php
+
+      sudo mkdir -p /var/www/html
+      sudo chown -R vagrant:vagrant /var/www/html
+
+      sudo bash -c 'echo "<VirtualHost *:80>
+          ServerAdmin webmaster@localhost
+          DocumentRoot /var/www/html/index.php
+
+
+          ErrorLog ${APACHE_LOG_DIR}/error.log
+          CustomLog ${APACHE_LOG_DIR}/access.log combined
+          </VirtualHost>" > /etc/apache2/sites-available/000-default.conf'
+
+        sudo systemctl restart apache2
+    SHELL
+
+    dynamic_server.vm.provision "file", source: "index.php", destination: "/var/www/html/index.php"
+  end
+end
