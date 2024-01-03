@@ -1,0 +1,20 @@
+---
+- name: Configure virtual machine
+  hosts: all
+  tasks:
+    - name: Update apt cache
+      become: yes
+      apt:
+        update_cache: yes
+        
+    - name: Install Apache
+      become: yes
+      apt:
+        name: apache2
+        state: present
+
+    - name: Start Apache service
+      become: yes
+      service:
+        name: apache2
+        state: started
