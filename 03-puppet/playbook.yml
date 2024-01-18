@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update Yum Packages
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install Puppet Server on master.puppet
+      yum:
+        name: puppetserver
+        state: present
+      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
+
+    - name: Start Puppet Server on master.puppet
+      service:
+        name: puppetserver
+        state: started
+        enabled: yes
+      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
+
+    - name: Install Puppet Agent on slaves
+      yum:
+        name: puppet-agent
+        state: present
+      when: ansible_os_family == 'RedHat' and inventory_hostname.startswith('slave')
+
+    - name: Configure Puppet Agent on slaves
+      template:
+        src: puppet-agent.conf.j2
+        dest: /etc/puppetlabs/puppet/puppet.conf
+      when: ansible_os_family == 'RedHat' and inventory_hostname.startswith('slave')
+
+    - name: Install r10k on master.puppet
+      yum:
+        name: r10k
+        state: present
+      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
+
+    - name: Configure r10k on master.puppet
+      template:
+        src: r10k.yaml.j2
+        dest: /etc/puppetlabs/r10k/r10k.yaml
+      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
