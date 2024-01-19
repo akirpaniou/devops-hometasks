@@ -2,44 +2,143 @@
 - hosts: all
   become: yes
   tasks:
-    - name: Update Yum Packages
-      yum:
-        name: '*'
-        state: latest
 
-    - name: Install Puppet Server on master.puppet
+    - name: Install EPEL repository
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install Ansible
+      yum: 
+        name: ansible
+        state: present
+
+    - name: Install Puppet release repository
+      shell: rpm -Uvh https://yum.puppet.com/puppet6-release-el-8.noarch.rpm
+    
+    - name: Install Puppet Server
       yum:
         name: puppetserver
         state: present
-      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
 
-    - name: Start Puppet Server on master.puppet
-      service:
+    - name: Configure Puppet Server memory
+      lineinfile:
+        path: /etc/sysconfig/puppetserver
+        line: 'JAVA_ARGS="-Xms512m -Xmx512m"'
+
+    - name: Start and enable Puppet Server service
+      systemd:
         name: puppetserver
-        state: started
         enabled: yes
-      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
+        state: started
 
-    - name: Install Puppet Agent on slaves
+    - name: Install Puppet Agent
       yum:
         name: puppet-agent
         state: present
-      when: ansible_os_family == 'RedHat' and inventory_hostname.startswith('slave')
 
-    - name: Configure Puppet Agent on slaves
-      template:
-        src: puppet-agent.conf.j2
-        dest: /etc/puppetlabs/puppet/puppet.conf
-      when: ansible_os_family == 'RedHat' and inventory_hostname.startswith('slave')
+    - name: Configure Puppet Agent to connect to Puppet Server
+      lineinfile:
+        path: /etc/puppetlabs/puppet/puppet.conf
+        line: 'server = master.puppet'
 
-    - name: Install r10k on master.puppet
+    - name: Add Puppet Server to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: '192.168.56.2 puppet'
+      when: "'master.puppet' in inventory_hostname"
+
+    - name: Start and enable Puppet Agent service
+      systemd:
+        name: puppet
+        enabled: yes
+        state: started
+
+    - name: Start and enabled Puppet Server service
+      systemd:
+        name: puppetserver
+        enabled: yes
+        state: started
+
+    - name: Install EPEL repository on master for r10k
       yum:
-        name: r10k
+        name: epel-release
         state: present
-      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
+      when: "'master.puppet' in inventory_hostname"
 
-    - name: Configure r10k on master.puppet
+    - name: Install Ruby and RubyGems on master
+      yum:
+        name:
+          - ruby
+          - rubygems
+          - ruby-devel
+          - gcc
+          - make
+          - redhat-rpm-config
+        state: present
+      when: "'master.puppet' in inventory_hostname"
+
+    - name: Create r10k configuration directory
+      file:
+        path: /etc/puppetlabs/r10k
+        state: directory
+      when: "'master.puppet' in inventory_hostname"
+
+    - name: Install r10k using gem
+      gem:
+        name: r10k
+        version: 3.6.0
+        state: present
+        user_install: false
+        executable: /opt/puppetlabs/puppet/bin/gem
+      when: "'master.puppet' in inventory_hostname"
+
+#    - name: Configure r10k to use your Puppet repository
+#      lineinfile:
+#        path: /etc/puppetlabs/r10k/r10k.yaml
+#        line: 'sources:
+#                mypuppet:
+#                  remote: https://github.com/akirpaniou/puppetrepo.git
+#                  basedir: "/etc/puppetlabs/code/environments"'
+#      notify: Restart Puppet Server
+#      when: "'master.puppet' in inventory_hostname"
+
+    - name: Deploy r10k configuration
       template:
         src: r10k.yaml.j2
         dest: /etc/puppetlabs/r10k/r10k.yaml
-      when: ansible_os_family == 'RedHat' and inventory_hostname == 'master.puppet'
+      when: "'master.puppet' in inventory_hostname"
+
+    - name: Ensure correct permissions for r10k.yaml
+      file:
+        path: /etc/puppetlabs/r10k/r10k.yaml
+        mode: "0644"
+      when: "'master.puppet' in inventory_hostname"
+    
+  handlers:
+    - name: Restart Puppet Server
+      systemd:
+        name: puppetserver
+        state: restarted
+
+    
+    - name: Set Puppet Server in Puppet Agent configuration
+      lineinfile:
+        path: /etc/puppetlabs/puppet/puppet.conf
+        line: 'server = master.puppet'
+      when: ansible_hostname != 'master.puppet'
+
+    - name: Add Puppet Server to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: '192.168.56.2 puppet'
+      when: ansible_hostname != 'master.puppet'
+
+    - name: Start and enable Puppet Agent service
+      systemd:
+        name: puppet
+        enabled: yes
+        state: started
+      when: ansible_hostname != 'master.puppet'
+
+    

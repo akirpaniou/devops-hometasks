@@ -8,42 +8,42 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.define "master.puppet", primary: true do |master|
-        master.vm.network "private_network", ip: "192.168.56.5"
-        master.vm.hostname = "master.puppet"
-        master.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
-        master.vm.provision "ansible_local" do |ansible|
-            ansible.playbook = "playbook.yml"
-            ansible.inventory_path = "inventory.ini"
-        end
+        master.vm.network "private_network", ip: "192.168.56.2"
         master.vm.provision "shell", inline: <<-SHELL
             sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
             service sshd restart
         SHELL
+        master.vm.hostname = "master.puppet"
+        master.vm.provider("virtualbox") { |vb| vb.memory = 2048 }
+        master.vm.provision "ansible_local" do |ansible|
+            ansible.playbook = "playbook.yml"
+            ansible.inventory_path = "inventory.ini"
+        end
     end
 
-    config.vm.define "slave1.puppet" do |slave1|
+    config.vm.define "slave1.puppet", primary: true do |slave1|
         slave1.vm.network "private_network", ip: "192.168.56.3"
+        slave1.vm.provision "shell", inline: <<-SHELL
+            sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+            service sshd restart
+        SHELL
         slave1.vm.hostname = "slave1.puppet"
         slave1.vm.provision "ansible_local" do |ansible|
             ansible.playbook = "playbook.yml"
             ansible.inventory_path = "inventory.ini"
         end
-        slave1.vm.provision "shell", inline: <<-SHELL
+    end
+
+    config.vm.define "slave2.puppet", primary: true do |slave2|
+        slave2.vm.network "private_network", ip: "192.168.56.4"
+        slave2.vm.provision "shell", inline: <<-SHELL
             sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
             service sshd restart
         SHELL
-    end
-
-    config.vm.define "slave2.puppet" do |slave2|
-        slave2.vm.network "private_network", ip: "192.168.56.4"
         slave2.vm.hostname = "slave2.puppet"
         slave2.vm.provision "ansible_local" do |ansible|
             ansible.playbook = "playbook.yml"
             ansible.inventory_path = "inventory.ini"
         end
-        slave2.vm.provision "shell", inline: <<-SHELL
-            sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
-            service sshd restart
-        SHELL
     end
 end
