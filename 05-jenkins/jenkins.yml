@@ -1,0 +1,12 @@
+jenkins:
+  systemMessage: "Jenkins configured using CASC"
+
+tool:
+  golang:
+    installations:
+    - name: "Go_1.18"
+      properties:
+      - installSource:
+          installers:
+          - golangInstaller:
+              id: "1.18.10"

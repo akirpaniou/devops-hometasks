@@ -1,0 +1,13 @@
+---
+- name: Setup Jenkins
+  hosts: all
+  become: yes
+
+  vars:
+    jenkins_hostname: 192.168.56.3
+    java_packages:
+      - openjdk-11-jdk
+
+  roles:
+    - geerlingguy.java
+    - geerlingguy.jenkins
