@@ -1,0 +1,20 @@
+FROM golang:1.16 AS builder
+
+WORKDIR /app
+
+RUN git clone https://github.com/Fenikks/word-cloud-generator.git .
+
+RUN make
+
+FROM alpine:latest
+
+WORKDIR /app
+
+RUN ls /app
+
+RUN ls /app/word-cloud-generator
+
+COPY --from=builder /app/word-cloud-generator /app/word-cloud-generator
+#COPY --from=builder /app/word-cloud-generator /app/
+
+CMD ["/app/word-cloud-generator"]
