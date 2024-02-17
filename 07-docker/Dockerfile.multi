@@ -2,19 +2,26 @@ FROM golang:1.16 AS builder
 
 WORKDIR /app
 
+#RUN apt-get update && apt-get install -y apache2 php nano git
+#RUN apt-get update && apt-get install -y wget
+
 RUN git clone https://github.com/Fenikks/word-cloud-generator.git .
 
 RUN make
 
 FROM alpine:latest
 
+RUN apk update && \
+    apk add --no-cache wget && \
+    wget  	http://dl-cdn.alpinelinux.org/alpine/v3.17/community/x86_64/gcompat-1.1.0-r0.apk && \
+    apk add --allow-untrusted gcompat-1.1.0-r0.apk && \
+    rm gcompat-1.1.0-r0.apk
+
 WORKDIR /app
 
-RUN ls /app
-
-RUN ls /app/word-cloud-generator
-
-COPY --from=builder /app/word-cloud-generator /app/word-cloud-generator
+COPY --from=builder /app/artifacts/linux/word-cloud-generator .
 #COPY --from=builder /app/word-cloud-generator /app/
 
-CMD ["/app/word-cloud-generator"]
+EXPOSE 8080
+
+CMD ["./word-cloud-generator"]
