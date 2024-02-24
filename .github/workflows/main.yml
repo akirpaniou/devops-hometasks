@@ -8,22 +8,21 @@ on:
 jobs:
   build:
     runs-on:ubuntu-latest
-    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Login in GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registery: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.ACTION_TOKEN }}
+      - name: Login in GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registery: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.ACTION_TOKEN }}
 
-    - name: Build Docker image
-      run: docker build -t ghcr.io/${{ github.repository_owner }}/wcg:latest -t ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }} -f Dockerfile.multi .
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/wcg:latest -t ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }} -f Dockerfile.multi .
 
-    - name: Push Docker image
-      run: |
-        docker push ghcr.io/${{ github.repository_owner }}/wcg:latest
-        docker push ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }}
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/wcg:latest
+          docker push ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }}
