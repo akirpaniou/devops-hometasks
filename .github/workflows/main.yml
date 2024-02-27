@@ -27,7 +27,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:${{ github.sha }} -t ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:latest -f Dockerfile.multi .
+          docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/owner/wcg:ff08b15a6faf217df617263d7dea06f3d585bfee -t ghcr.io/owner/wcg:latest -f Dockerfile.multi .
           docker buildx imagetools create ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:${{ github.sha }} --tag ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:latest
 
       - name: Push Docker image
