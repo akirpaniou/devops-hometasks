@@ -26,9 +26,7 @@ jobs:
           password: ${{ secrets.ACTION_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t wcg:${{ github.sha }} -t wcg:latest -f FirstAppJenkins/Dockerfile.multi .
-        #docker build -t wcg:${{ github.sha }} -t wcg:latest -f Dockerfile.multi .
-        #docker build -t ghcr.io/${{ github.repository_owner }}/wcg:latest -t ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }} -f Dockerfile.multi .
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/wcg:latest -t ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }} -f Dockerfile.multi .
 
       - name: Push Docker image
         run: |
