@@ -20,7 +20,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.ACTION_TOKEN }}
+          #password: ${{ secrets.ACTION_TOKEN }}
 
       - name: Build Docker image
         run: docker build -t ghcr.io/${{ github.repository_owner }}/wcg:latest -t ghcr.io/${{ github.repository_owner }}/wcg:${{ github.sha }} -f Dockerfile.multi .
