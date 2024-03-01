@@ -35,5 +35,5 @@ jobs:
           file: 07-docker/Dockerfile.multi
           push: true
           tags: |
-            ghcr.io/${{ steps.string.outputs.lowercase }}/${{ env.github.repository_owner }}:${{ env.VERSION_IMAGE }}
-            ghcr.io/${{ steps.string.outputs.lowercase }}/${{ env.github.repository_owner }}:${{ github.sha }}
+            ghcr.io/${{ env.github.repository_owner }}:${{ env.VERSION_IMAGE }}
+            ghcr.io/${{ env.github.repository_owner }}:${{ github.sha }}
