@@ -34,4 +34,3 @@ jobs:
           tags: |
             ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:${{ github.sha }}
             ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:latest
-#docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/owner/wcg:ff08b15a6faf217df617263d7dea06f3d585bfee -t ghcr.io/owner/wcg:latest -f 07-docker/Dockerfile.multi .
