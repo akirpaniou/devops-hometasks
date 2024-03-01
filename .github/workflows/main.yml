@@ -6,6 +6,10 @@ on:
 
   workflow_dispatch:
 
+env:
+  NAME_IMAGE: wcg
+  VERSION_IMAGE: latest
+
 
 jobs:
   buildandpush:
@@ -31,5 +35,5 @@ jobs:
           file: 07-docker/Dockerfile.multi
           push: true
           tags: |
-            ghcr.io/${{ env.github.repository_owner }}/wcg:${{ github.sha }}:${{steps.get-tags.outputs.tags }}
-            ghcr.io/${{ env.github.repository_owner }}/wcg:latest:${{steps.get-tags.outputs.tags }}
+            ghcr.io/${{ env.NAME_IMAGE }}:${{ env.VERSION_IMAGE }}
+            ghcr.io/${{ env.NAME_IMAGE }}:${{ github.sha }}
