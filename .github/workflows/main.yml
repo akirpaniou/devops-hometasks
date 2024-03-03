@@ -11,6 +11,7 @@ env:
   VERSION_IMAGE: latest
   URL_DOCKERFILE: https://github.com/akirpaniou/devops-hometasks/blob/master/07-docker/Dockerfile.multi
 
+
 jobs:
   buildandpush:
     runs-on: ubuntu-latest
