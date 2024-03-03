@@ -3,22 +3,13 @@ FROM golang:1.16 AS builder
 
 RUN apt-get update && apt-get install -y wget && \
     apt-get clean
-#RUN apk update && \
-#    apk add --no-cache wget && \
-#    wget  	http://dl-cdn.alpinelinux.org/alpine/v3.17/community/x86_64/gcompat-1.1.0-r0.apk && \
-#    apk add --allow-untrusted gcompat-1.1.0-r0.apk && \
-#    rm gcompat-1.1.0-r0.apk
 
 WORKDIR /src
-
-#RUN apt-get update && apt-get install -y apache2 php nano git
-#RUN apt-get update && apt-get install -y wget
 
 RUN git clone https://github.com/Fenikks/word-cloud-generator.git
 
 WORKDIR /src/word-cloud-generator
 
-#RUN make
 
 RUN mkdir -p artifacts && CGO_ENABLED=0 GOOS=linux go build -o /src/word-cloud-generator/artifacts/word-cloud-generator -v
 
@@ -28,7 +19,6 @@ FROM alpine:latest
 #WORKDIR /src
 
 COPY --from=builder /src/word-cloud-generator/artifacts/word-cloud-generator /opt/word-cloud-generator
-#COPY --from=builder /app/word-cloud-generator /app/
 
 EXPOSE 8080
 
