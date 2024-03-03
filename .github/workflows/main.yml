@@ -6,6 +6,10 @@ on:
 
   workflow_dispatch:
 
+env:
+  NAME_IMAGE: wcg
+  VERSION_IMAGE: latest
+  URL_DOCKERFILE: https://github.com/akirpaniou/devops-hometasks/blob/master/07-docker/Dockerfile.multi
 
 jobs:
   buildandpush:
@@ -16,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -26,11 +30,11 @@ jobs:
           password: ${{ secrets.ACTION_TOKEN }}
 
       - name: Build Docker image
-        run: |
-          docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/owner/wcg:ff08b15a6faf217df617263d7dea06f3d585bfee -t ghcr.io/owner/wcg:latest -f 07-docker/Dockerfile.multi .
-          docker buildx imagetools create ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:${{ github.sha }} --tag ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:latest
-
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:${{ github.sha }}
-          docker push ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/wcg:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.URL_DOCKERFILE }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ env.NAME_IMAGE }}:${{ env.VERSION_IMAGE }}
+            ghcr.io/${{ env.NAME_IMAGE }}:${{ github.sha }}
