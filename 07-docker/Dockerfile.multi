@@ -1,9 +1,5 @@
 FROM golang:1.16 AS builder
 
-
-RUN apt-get update && apt-get install -y wget && \
-    apt-get clean
-
 WORKDIR /src
 
 RUN git clone https://github.com/Fenikks/word-cloud-generator.git
@@ -14,9 +10,6 @@ WORKDIR /src/word-cloud-generator
 RUN mkdir -p artifacts && CGO_ENABLED=0 GOOS=linux go build -o /src/word-cloud-generator/artifacts/word-cloud-generator -v
 
 FROM alpine:latest
-
-
-#WORKDIR /src
 
 COPY --from=builder /src/word-cloud-generator/artifacts/word-cloud-generator /opt/word-cloud-generator
 
